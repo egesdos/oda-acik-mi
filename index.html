@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Oda Aktiflik</title>
+<link rel="icon" href="logo.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap">
+<style>
+  :root {
+    --bg: #000000;
+    --fg: #ffffff;
+    --muted: #8a8a8a;
+    --line: #2e2e2e;
+    --field: #0e0e0e;
+    --online: #22c55e;
+    --offline: #ef4444;
+    --font: "Silkscreen", "Courier New", monospace;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { -webkit-font-smoothing: none; font-smooth: never; text-transform: uppercase; }
+  button, input, input::placeholder { text-transform: uppercase; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font-family: var(--font); }
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    padding:
+      max(28px, env(safe-area-inset-top))
+      max(20px, env(safe-area-inset-right))
+      max(24px, env(safe-area-inset-bottom))
+      max(20px, env(safe-area-inset-left));
+  }
+  header { display: flex; justify-content: center; }
+  .logo { width: min(80vw, 340px); height: auto; display: block; }
+
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    text-align: center;
+    padding-block: 32px;
+  }
+  .label { font-weight: 400; font-size: 1rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .state { font-weight: 700; font-size: clamp(2.5rem, 14vw, 5rem); line-height: 1; color: var(--muted); transition: color .25s; }
+  .state.on { color: var(--online); }
+  .state.off { color: var(--offline); }
+
+  footer { width: 100%; max-width: 420px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+  .btn {
+    appearance: none;
+    width: 100%;
+    min-height: 62px;
+    border-radius: 0;
+    border: 2px solid var(--fg);
+    background: var(--fg);
+    color: var(--bg);
+    font: 700 1.15rem var(--font);
+    letter-spacing: .04em;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform .08s, opacity .15s;
+  }
+  .btn:active { transform: scale(.98); }
+  .btn:disabled { opacity: .5; }
+  .btn:focus-visible, input:focus-visible, .link:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+  form { display: flex; flex-direction: column; gap: 12px; margin: 0; }
+  input {
+    width: 100%;
+    min-height: 56px;
+    border-radius: 0;
+    border: 1px solid var(--line);
+    background: var(--field);
+    color: var(--fg);
+    font: 400 16px var(--font);
+    padding: 0 16px;
+  }
+  input::placeholder { color: var(--muted); }
+  .link {
+    align-self: center;
+    background: none;
+    border: 0;
+    color: var(--muted);
+    font: 400 .9rem var(--font);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  .msg { margin: 0; color: var(--offline); font-size: .95rem; text-align: center; }
+  .demo {
+    font-family: var(--font);
+    margin: 0 auto 16px;
+    max-width: 420px;
+    padding: 10px 14px;
+    border: 1px dashed var(--line);
+    border-radius: 0;
+    color: var(--muted);
+    font-size: .85rem;
+    text-align: center;
+  }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+  <p id="demo" class="demo" hidden>Demo modu: <span lang="en">Firebase</span> ayarları henüz girilmedi, değişiklikler kaydedilmiyor.</p>
+
+  <header>
+    <img class="logo" src="logo.webp" alt="Kulüp logosu">
+  </header>
+
+  <main aria-live="polite">
+    <div class="label">Oda Aktiflik</div>
+    <div id="state" class="state" lang="en">…</div>
+  </main>
+
+  <footer>
+    <button id="toggle" class="btn" type="button" hidden>Odayı Aç</button>
+
+    <form id="login" hidden>
+      <input id="password" type="password" placeholder="Yetkili şifresi" autocomplete="current-password" required>
+      <button class="btn" type="submit">Giriş yap</button>
+    </form>
+
+    <p id="msg" class="msg" hidden></p>
+    <button id="logout" class="link" type="button" hidden>Çıkış yap</button>
+  </footer>
+
+<script type="module">
+  // ==== FIREBASE AYARLARI =====================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyA2yeQkJhhduD9ia6H9lC9TQu5jjPDixAc",
+    authDomain: "oda-acik-mi.firebaseapp.com",
+    databaseURL: "https://oda-acik-mi-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "oda-acik-mi",
+    appId: "1:43946166857:web:149e0d731e2a6e4703cd98"
+  };
+  // Firebase Authentication'daki yetkili hesabın e-postası.
+  const YETKILI_EMAIL = "egeardakaya2@gmail.com";
+  // =============================================================
+
+  const $ = (id) => document.getElementById(id);
+  const demo = firebaseConfig.apiKey.startsWith("BURAYA");
+
+  let isOpen = null;   // null = henüz yüklenmedi
+  let signedIn = false;
+  let api = null;      // { toggle(next), login(pw), logout() }
+
+  function render() {
+    const st = $("state");
+    st.className = "state" + (isOpen === null ? "" : isOpen ? " on" : " off");
+    st.textContent = isOpen === null ? "…" : isOpen ? "ONLINE" : "OFFLINE";
+
+    $("toggle").textContent = isOpen ? "Odayı Kapa" : "Odayı Aç";
+    $("toggle").hidden = !signedIn || isOpen === null;
+    $("logout").hidden = !signedIn;
+    $("login").hidden = signedIn || location.hash !== "#yetkili";
+  }
+
+  function showMsg(text) {
+    $("msg").textContent = text || "";
+    $("msg").hidden = !text;
+  }
+
+  $("toggle").addEventListener("click", async () => {
+    const btn = $("toggle");
+    btn.disabled = true;
+    showMsg("");
+    try {
+      await api.toggle(!isOpen);
+    } catch (e) {
+      const denied = /permission/i.test(String((e && (e.code || e.message)) || ""));
+      showMsg(denied ?"Bu hesabın durumu değiştirme yetkisi yok." : "Kaydedilemedi, internetini kontrol edip tekrar dene.");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  $("login").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    showMsg("");
+    try {
+      await api.login($("password").value);
+      $("password").value = "";
+      history.replaceState(null, "", location.pathname + location.search);
+    } catch (e) {
+      const code = e && e.code;
+      if (code === "auth/too-many-requests") showMsg("Çok fazla deneme yapıldı, biraz bekleyip tekrar dene.");
+      else if (code === "auth/network-request-failed") showMsg("İnternet bağlantısı yok.");
+      else showMsg("Şifre yanlış.");
+    }
+    render();
+  });
+
+  $("logout").addEventListener("click", async () => {
+    showMsg("");
+    await api.logout();
+  });
+
+  window.addEventListener("hashchange", render);
+
+  if (demo) {
+    $("demo").hidden = false;
+    isOpen = false;
+    api = {
+      async toggle(next) { isOpen = next; render(); },
+      async login() { signedIn = true; },
+      async logout() { signedIn = false; render(); }
+    };
+    render();
+  } else {
+    render();
+    const V = "10.12.2";
+    const [{ initializeApp }, dbm, authm] = await Promise.all([
+      import(`https://www.gstatic.com/firebasejs/${V}/firebase-app.js`),
+      import(`https://www.gstatic.com/firebasejs/${V}/firebase-database.js`),
+      import(`https://www.gstatic.com/firebasejs/${V}/firebase-auth.js`)
+    ]);
+    const app = initializeApp(firebaseConfig);
+    const db = dbm.getDatabase(app);
+    const auth = authm.getAuth(app);
+    const statusRef = dbm.ref(db, "status");
+
+    dbm.onValue(
+      statusRef,
+      (snap) => { isOpen = snap.val() === true; render(); },
+      () => { $("state").textContent = "—"; showMsg("Durum okunamadı, sayfayı yenile."); }
+    );
+    authm.onAuthStateChanged(auth, (u) => { signedIn = !!u; render(); });
+
+    api = {
+      toggle: (next) => dbm.set(statusRef, next),
+      login: (pw) => authm.signInWithEmailAndPassword(auth, YETKILI_EMAIL, pw),
+      logout: () => authm.signOut(auth)
+    };
+  }
+</script>
+</body>
+</html>
