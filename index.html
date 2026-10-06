@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -60,12 +60,12 @@
   .btn {
     appearance: none;
     width: 100%;
-    min-height: 62px;
+    min-height: 76px;
     border-radius: 0;
     border: 2px solid var(--fg);
     background: var(--fg);
     color: var(--bg);
-    font: 700 1.15rem var(--font);
+    font: 700 clamp(1.5rem, 7.5vw, 2rem) var(--font);
     letter-spacing: .04em;
     cursor: pointer;
     touch-action: manipulation;
@@ -113,27 +113,27 @@
 </style>
 </head>
 <body>
-  <p id="demo" class="demo" hidden>Demo modu: <span lang="en">Firebase</span> ayarları henüz girilmedi, değişiklikler kaydedilmiyor.</p>
+  <p id="demo" class="demo" hidden>Demo modu: Firebase ayarlari girilmedi, degisiklikler kaydedilmiyor.</p>
 
   <header>
-    <img class="logo" src="logo.webp" alt="Kulüp logosu">
+    <img class="logo" src="logo.webp" alt="Kulup logosu">
   </header>
 
   <main aria-live="polite">
     <div class="label">Oda Aktiflik</div>
-    <div id="state" class="state" lang="en">…</div>
+    <div id="state" class="state">…</div>
   </main>
 
   <footer>
-    <button id="toggle" class="btn" type="button" hidden>Odayı Aç</button>
+    <button id="toggle" class="btn" type="button" hidden>Odayi Ac</button>
 
     <form id="login" hidden>
-      <input id="password" type="password" placeholder="Yetkili şifresi" autocomplete="current-password" required>
-      <button class="btn" type="submit">Giriş yap</button>
+      <input id="password" type="password" placeholder="Yetkili sifresi" autocomplete="current-password" required>
+      <button class="btn" type="submit">Giris yap</button>
     </form>
 
     <p id="msg" class="msg" hidden></p>
-    <button id="logout" class="link" type="button" hidden>Çıkış yap</button>
+    <button id="logout" class="link" type="button" hidden>Cikis yap</button>
   </footer>
 
 <script type="module">
@@ -161,7 +161,7 @@
     st.className = "state" + (isOpen === null ? "" : isOpen ? " on" : " off");
     st.textContent = isOpen === null ? "…" : isOpen ? "ONLINE" : "OFFLINE";
 
-    $("toggle").textContent = isOpen ? "Odayı Kapa" : "Odayı Aç";
+    $("toggle").textContent = isOpen ? "Odayi Kapa" : "Odayi Ac";
     $("toggle").hidden = !signedIn || isOpen === null;
     $("logout").hidden = !signedIn;
     $("login").hidden = signedIn || location.hash !== "#yetkili";
@@ -180,7 +180,7 @@
       await api.toggle(!isOpen);
     } catch (e) {
       const denied = /permission/i.test(String((e && (e.code || e.message)) || ""));
-      showMsg(denied ?"Bu hesabın durumu değiştirme yetkisi yok." : "Kaydedilemedi, internetini kontrol edip tekrar dene.");
+      showMsg(denied ?"Bu hesabin durumu degistirme yetkisi yok." : "Kaydedilemedi, interneti kontrol edip tekrar dene.");
     } finally {
       btn.disabled = false;
     }
@@ -195,9 +195,9 @@
       history.replaceState(null, "", location.pathname + location.search);
     } catch (e) {
       const code = e && e.code;
-      if (code === "auth/too-many-requests") showMsg("Çok fazla deneme yapıldı, biraz bekleyip tekrar dene.");
-      else if (code === "auth/network-request-failed") showMsg("İnternet bağlantısı yok.");
-      else showMsg("Şifre yanlış.");
+      if (code === "auth/too-many-requests") showMsg("Cok fazla deneme yapildi, biraz bekleyip tekrar dene.");
+      else if (code === "auth/network-request-failed") showMsg("Internet baglantisi yok.");
+      else showMsg("Sifre yanlis.");
     }
     render();
   });
@@ -234,7 +234,7 @@
     dbm.onValue(
       statusRef,
       (snap) => { isOpen = snap.val() === true; render(); },
-      () => { $("state").textContent = "—"; showMsg("Durum okunamadı, sayfayı yenile."); }
+      () => { $("state").textContent = "—"; showMsg("Durum okunamadi, sayfayi yenile."); }
     );
     authm.onAuthStateChanged(auth, (u) => { signedIn = !!u; render(); });
 
